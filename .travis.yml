@@ -1,0 +1,47 @@
+sudo: false
+dist: trusty
+language: python
+cache: pip
+matrix:
+  include: # https://github.com/travis-ci/travis-ci/issues/8783
+    - os: linux
+      python: 3.4
+    - os: linux
+      python: 3.5
+    - os: linux
+      python: 3.6
+    - os: linux
+      python: 3.7-dev
+    - os: linux
+      python: nightly
+    - os: linux
+      python: pypy3
+    # https://github.com/travis-ci/travis-ci/issues/6865#issuecomment-345513305
+    #- os: linux
+    #  python: pypy3-nightly
+    - os: osx
+      python: nightly
+    #- os: osx
+    #  python: pypy3
+    #- os: osx
+    #  python: pypy3-nightly
+before_install:
+  - source ./.ci/pythonStdlibFixes.sh
+  - pip3 install --upgrade setuptools
+  - pip3 install --upgrade setuptools_scm
+  - pip3 install --upgrade git+https://github.com/pypa/pip.git git+https://github.com/pypa/wheel.git
+  - pip3 install --upgrade pandas numpy xgboost lazy_object_proxy
+  - pip3 install --upgrade git+https://github.com/erikrose/more-itertools.git
+  - pip3 install --upgrade git+https://gitlab.com/KOLANICH/Chassis.py.git
+  - pip3 install --upgrade git+https://gitlab.com/KOLANICH/lazyImport.py.git
+  - pip3 install --upgrade git+https://gitlab.com/KOLANICH/AutoXGBoost.py.git
+  - pip3 install --upgrade git+https://gitlab.com/KOLANICH/NoSuspend.py.git
+  - pip3 install --upgrade coveralls
+install:
+    - python learn/learnWDSeries.py --train --score 10
+    - python setup.py bdist_wheel
+    - pip install --upgrade ./dist/*.whl
+script:
+  - coverage run --source=HDDModelDecoder tests/test.py || true
+after_success:
+  - coveralls
